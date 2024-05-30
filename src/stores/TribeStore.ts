@@ -7,6 +7,7 @@ import FetchingStateStore from "./StateStores/FetchingStateStore";
 import { TribeType, UserPositionType, UserType } from "../types/TribesTypes";
 import { OptionType } from "../components/ui/fields/SelectField";
 import { TasksStore } from "./TasksStore";
+import UserStore from "./UserStore";
 
 
 class TribeStore {
@@ -34,7 +35,9 @@ class TribeStore {
 
   tasksStore?: TasksStore;
 
-  constructor(tribes: TribeType) {
+  userStore?: UserStore;
+
+  constructor(tribes: TribeType, userStore: UserStore) {
     this.name = tribes.name;
     this.creatorId = tribes.creatorId;
     this.id = tribes.id;
@@ -43,6 +46,10 @@ class TribeStore {
     this.users = [];
     this.searchUsers = []
     this.tasksStore = new TasksStore();
+
+    this.userStore = userStore;
+
+    this.selectedUser = this.positions?.find((val) => val.userId === userStore.user?.id)
 
     makeAutoObservable(this);
   }

@@ -5,6 +5,7 @@ import SuccessStateStore from "./StateStores/SuccessStateStore";
 import ErrorStateStore from "./StateStores/ErrorStateStore";
 import FetchingStateStore from "./StateStores/FetchingStateStore";
 import { TribeStore } from "./TribeStore";
+import UserStore from "./UserStore";
 
 
 class TribesStore {
@@ -12,10 +13,13 @@ class TribesStore {
 
   state?: StateStore;
 
+  userStore: UserStore;
+
   _selectedTribeId?: string;
 
-  constructor() {
+  constructor(userStore: UserStore) {
     this.tribes = [];
+    this.userStore = userStore
     makeAutoObservable(this);
   }
 
@@ -38,7 +42,7 @@ class TribesStore {
       if (response.status === 200) {
         this.tribes = [
           ...response.data.map(
-            (tribe) => new TribeStore(tribe)
+            (tribe) => new TribeStore(tribe, this.userStore)
           )];
         this.state = new SuccessStateStore()
       }
@@ -99,6 +103,11 @@ class TribesStore {
     } catch  (error)  {
       this.state  = new ErrorStateStore(error)
     }
+  }
+
+  public clearStore() {
+    this.state = new SuccessStateStore();
+    this.tribes = [];
   }
 }
 

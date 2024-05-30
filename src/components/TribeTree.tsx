@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { styled } from 'styled-components';
 import UseStores from '../hooks/useStores';
 import { Loader } from './Loader';
@@ -7,9 +7,8 @@ import Title from './ui/Title';
 import { TitleType } from '../types/commonTypes';
 import ProfileItem from './ProfileItem';
 import { SmallProfileItem } from './SmallProfileItem';
-import { UserPositionType, UserType } from '../types/TribesTypes';
 import { Button } from './ui/Button';
-import { runInAction } from 'mobx';
+import { UserType } from '../types/TribesTypes';
 
 const TribesListBody = styled.div`
   display: flex;
@@ -44,30 +43,30 @@ const TribeTree : FC = observer(() => {
   const user = tribesStore.selectedTribe?.positions && tribesStore.selectedTribe?.positions.find((pos) => {
     return pos.userId === userStore.user?.id;
   })
-  const [currentUser, setCurrentUser] = useState<UserPositionType>();
+  // const [currentUser, setCurrentUser] = useState<UserPositionType>();
 
   useEffect(() => {
     tribesStore.selectedTribe?.GetTribeUsers();
-    tribesStore.selectedTribe?.GetParticipantByIds(currentUser?.parentIds ?? user?.parentIds ?? []);
-    tribesStore.selectedTribe?.GetChildrenByIds(currentUser?.childrenIds ?? user?.childrenIds ?? []);
-  }, [currentUser, tribesStore.selectedTribe])
+    tribesStore.selectedTribe?.GetParticipantByIds(tribesStore.selectedTribe?.selectedUser?.parentIds ??  []);
+    tribesStore.selectedTribe?.GetChildrenByIds(tribesStore.selectedTribe?.selectedUser?.childrenIds ?? []);
+  }, [tribesStore.selectedTribe?.selectedUser, tribesStore.selectedTribe])
 
-  useEffect(() => {
-    runInAction(() => {
-      if (tribesStore.selectedTribe) {
-        tribesStore.selectedTribe.selectedUser = (currentUser ?? user);
-      }
-    })
-  }, [currentUser, user, tribesStore.selectedTribeId])
+  // useEffect(() => {
+  //   runInAction(() => {
+  //     if (tribesStore.selectedTribe) {
+  //       tribesStore.selectedTribe.selectedUser = (tribesStore.selectedTribe?.selectedUser);
+  //     }
+  //   })
+  // }, [currentUser, user, tribesStore.selectedTribeId])
 
   const CurrentUserCard = useMemo(() => {
     return (
       <ProfileItem
-        user={tribesStore.selectedTribe?.users.find((id) => id.id  ===  (currentUser?.userId ?? user?.userId  ?? '')) ?? {} as UserType}
+        user={tribesStore.selectedTribe?.users.find((id) => id.id  ===  tribesStore.selectedTribe?.selectedUser?.userId) ?? {} as UserType}
         withBorder
       />
     )
-  }, [tribesStore.selectedTribe?.users, currentUser])
+  }, [tribesStore.selectedTribe?.users, tribesStore.selectedTribe?.selectedUser])
 
   const participants = useMemo(() => {
     return !!tribesStore.selectedTribe?.participant?.length && (
@@ -82,9 +81,11 @@ const TribeTree : FC = observer(() => {
               <SmallProfileItem
                 key={parent.id}
                 onClick={()  =>  {
-                  setCurrentUser(tribesStore.selectedTribe?.positions?.find((pos) => {
-                    return pos.userId === parent.id;
-                  } ));
+                  if (tribesStore?.selectedTribe) {
+                    tribesStore.selectedTribe.selectedUser = tribesStore.selectedTribe?.positions?.find((val) => {
+                      return val.userId === parent.id;
+                    })
+                  }
                 }}
                 user={parent}
               />
@@ -108,9 +109,11 @@ const TribeTree : FC = observer(() => {
               <SmallProfileItem
                 key={children.id}
                 onClick={()  =>  {
-                  setCurrentUser(tribesStore.selectedTribe?.positions?.find((pos) => {
-                    return pos.userId === children.id;
-                  } ));
+                  if (tribesStore?.selectedTribe) {
+                    tribesStore.selectedTribe.selectedUser = tribesStore.selectedTribe?.positions?.find((val) => {
+                      return val.userId === children.id;
+                    })
+                  }
                 }}
                 user={children}
               />
@@ -147,9 +150,15 @@ const TribeTree : FC = observer(() => {
 
                 {childrenMemo}
                 {
-                  currentUser?.userId && currentUser?.userId !== user?.userId && (
+                  tribesStore.selectedTribe?.selectedUser?.userId && tribesStore.selectedTribe?.selectedUser?.userId !== user?.userId && (
                     <Button
-                      onClick={() => setCurrentUser(user)}
+                      onClick={() => {
+                        if (tribesStore.selectedTribe) {
+                          tribesStore.selectedTribe.selectedUser = tribesStore.selectedTribe?.positions?.find((val) => {
+                            return val.userId === userStore.user?.id;
+                          })
+                        }
+                      }}
                       text="Вернуться к себе"
                     />
                   )

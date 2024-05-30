@@ -62,7 +62,7 @@ const ProfileModal = styled.div`
 
 const PageHeader = observer(() => {
   const navigate = useNavigate();
-  const { userStore } = UseStores();
+  const { userStore, tribesStore } = UseStores();
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
   return (
@@ -110,7 +110,9 @@ const PageHeader = observer(() => {
 
               <Button
                 onClick={() => {
+                  tribesStore.clearStore();
                   userStore.Logout();
+
                 }}
                 text={
                   <ExitButton>
