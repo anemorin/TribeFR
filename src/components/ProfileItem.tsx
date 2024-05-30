@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { UserType } from '../types/TribesTypes';
 import { FlexContainer } from './FlexContainer';
 import { Icon } from './ui/Icon';
+import { observer } from 'mobx-react';
 
 const Profile = styled.div`
   border-radius: 50%;
@@ -57,4 +58,4 @@ const ProfileItem : FC<{user: UserType, withIcon?: boolean, withBorder?: boolean
   );
 };
 
-export default ProfileItem;
+export default observer(ProfileItem);

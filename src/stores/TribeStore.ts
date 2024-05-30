@@ -6,6 +6,7 @@ import ErrorStateStore from "./StateStores/ErrorStateStore";
 import FetchingStateStore from "./StateStores/FetchingStateStore";
 import { TribeType, UserPositionType, UserType } from "../types/TribesTypes";
 import { OptionType } from "../components/ui/fields/SelectField";
+import { TasksStore } from "./TasksStore";
 
 
 class TribeStore {
@@ -31,6 +32,8 @@ class TribeStore {
 
   _selectedUser?: UserPositionType;
 
+  tasksStore?: TasksStore;
+
   constructor(tribes: TribeType) {
     this.name = tribes.name;
     this.creatorId = tribes.creatorId;
@@ -39,6 +42,7 @@ class TribeStore {
     this.positions = tribes.positions;
     this.users = [];
     this.searchUsers = []
+    this.tasksStore = new TasksStore();
 
     makeAutoObservable(this);
   }

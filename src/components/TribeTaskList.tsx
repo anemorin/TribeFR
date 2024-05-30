@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { styled } from 'styled-components';
 import { Button } from './ui/Button';
 import UseStores from '../hooks/useStores';
@@ -10,6 +10,8 @@ import TextInput  from './ui/fields/TextField';
 import { Loader } from './Loader';
 import * as Yup from 'yup';
 import { observer } from 'mobx-react';
+import Title from './ui/Title';
+import { TitleType } from '../types/commonTypes';
 
 const TribesListBody = styled.div`
   display: flex;
@@ -27,23 +29,103 @@ const TaskList = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* justify-content: center; */
   gap: 12px;
   width: 100%;
   min-height: 95%;
   overflow: hidden;
 `;
 
+const EmptyPlaceholder = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+`;
+
+const TaskItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid black;
+  border-radius: 6px;
+  padding: 12px;
+  width: 100%;
+`
+
+const TaskDescription = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+`
+
 const TribeTaskList : FC = observer(() => {
-  const { userStore, tribesStore, tasksStore  } = UseStores();
+  const { userStore, tribesStore  } = UseStores();
   const [ showModal, setShowModal ] = useState(false);
   const [performer, setPerformer] = useState('');
   const currentStore = tribesStore.tribes?.find((tribe) => tribe.id === tribesStore.selectedTribeId);
 
+  useEffect(() => {
+    const initialFetch = async () => {
+      if (currentStore && currentStore.id && currentStore.selectedUser) {
+        await currentStore?.tasksStore?.GetTasks(currentStore.selectedUser?.userId, currentStore.id);
+      }
+    }
+
+    initialFetch();
+  }, [currentStore?.selectedUser])
+
   return (
     <TribesListBody>
       <TaskList>
-        Таски
+        {
+          currentStore
+            ? (
+              <>
+                {
+                  currentStore.state?.isLoading ? (
+                    <Loader />
+                  ) : currentStore?.tasksStore?.tasks?.map((task) => {
+                    return (
+                      <TaskItem key={task.id}>
+                        <Title
+                          text={task.name}
+                          type={TitleType.SubTitle}
+                        />
+                        <TaskDescription>
+                          <Title
+                            text='Описание'
+                            type={TitleType.CardTitle}
+                          />
+                          <p>{task.content.sections[0].input.content}</p>
+                        </TaskDescription>
+                      </TaskItem>
+                    )
+                  })
+                }
+              </>
+            ) : (
+              <EmptyPlaceholder>
+                Выберите трайб
+              </EmptyPlaceholder>
+            )
+        }
+        {/* {
+          currentStore?.tasksStore?.tasks?.map((task) => {
+            return (
+              <div key={task.id}>
+                <Title
+                  text={task.name}
+                  type={TitleType.SubTitle}
+                />
+                <p>Описание</p>
+                <p>{task.content.sections[0].input.content}</p>
+              </div>
+            )
+          })
+        } */}
       </TaskList>
       {
         currentStore && (
@@ -62,7 +144,7 @@ const TribeTaskList : FC = observer(() => {
           >
             <TaskList>
               <CustomSelect
-                isClearable={true}
+                isClearable={false}
                 isSearchable={false}
                 onChangeValue={(value) => {
                   setPerformer(value.value);
@@ -77,13 +159,16 @@ const TribeTaskList : FC = observer(() => {
                 }}
                 onSubmit={async (values, { setSubmitting }) => {
                   if (currentStore && currentStore.id) {
-                    await tasksStore.CreateTask(values.TribeName, values.TribeDescription, currentStore?.id, performer)
+                    await currentStore?.tasksStore?.CreateTask(values.TribeName, values.TribeDescription, currentStore?.id, performer)
                   }
                   // await tribesStore.ChangeNameTribe(id, values.TribeName!);
                   // if (tribesStore.state?.isSuccess) {
                   //   tribesStore.GetTribes();
                   // }
-                  // setShowModal(false);
+                  if (currentStore && currentStore.id) {
+                    await currentStore?.tasksStore?.GetTasks(userStore.user?.id ?? '', currentStore!.id);
+                  }
+                  setShowModal(false);
                   setSubmitting(false);
                 }}
                 validationSchema={Yup.object({

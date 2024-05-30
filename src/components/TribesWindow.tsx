@@ -19,7 +19,7 @@ const TribesWindowBody = styled.div`
 
 const TribesWindow = observer(() => {
   const { tribesStore } = useStores();
-  console.warn("TribesWindow");
+  console.warn(tribesStore.selectedTribeId)
   return (
     <TribesWindowBody>
       <TribesList />

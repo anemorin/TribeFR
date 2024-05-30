@@ -27,6 +27,10 @@ class TribesStore {
     this._selectedTribeId  =  id;
   }
 
+  public get selectedTribe() {
+    return this.tribes?.find((tribe) => tribe.id === this.selectedTribeId);
+  }
+
   public async GetTribes() {
     this.state = new FetchingStateStore();
     try {

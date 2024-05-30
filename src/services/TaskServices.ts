@@ -7,13 +7,21 @@ class TaskServices {
       content: {
         sections: [
           {
-            content: content,
+            label: 'Описание',
+            input: {
+              content: content,
+            }
           }
         ]
       },
       tribeId,
       performerId
     });
+    return response;
+  }
+
+  static async GetTasks(tribeId: string, userId: string) {
+    const response = await ApiConnection.get(`tasks/get-all-taken-by-user/${tribeId}/${userId}`);
     return response;
   }
 }

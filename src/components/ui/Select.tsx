@@ -8,6 +8,7 @@ import styled from 'styled-components';
 
 const SelectContainer = styled.div`
   /* width: 70%; */
+  width: 100%;
   height: 10%;
   z-index: 999999;
   color: 'black';

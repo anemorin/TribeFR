@@ -36,38 +36,95 @@ const TribesTreeContainer = styled.div`
 const UsersList = styled.div`
   display: flex;
   flex-wrap: wrap;
+  gap: 4px;
 `
 
 const TribeTree : FC = observer(() => {
   const { tribesStore, userStore } = UseStores();
-  const currentStore = tribesStore.tribes?.find((tribe) => tribe.id === tribesStore.selectedTribeId);
-  const user = currentStore?.positions && currentStore?.positions.find((pos) => {
+  const user = tribesStore.selectedTribe?.positions && tribesStore.selectedTribe?.positions.find((pos) => {
     return pos.userId === userStore.user?.id;
   })
   const [currentUser, setCurrentUser] = useState<UserPositionType>();
 
+  // useEffect(() => {
+  //   setCurrentUser(user);
+  // }, [tribesStore.selectedTribe])
+
   useEffect(() => {
-    currentStore?.GetTribeUsers();
-    currentStore?.GetParticipantByIds(currentUser?.parentIds ?? user?.parentIds ?? []);
-    currentStore?.GetChildrenByIds(currentUser?.childrenIds ?? user?.childrenIds ?? []);
-  }, [currentUser, currentStore])
+    tribesStore.selectedTribe?.GetTribeUsers();
+    tribesStore.selectedTribe?.GetParticipantByIds(currentUser?.parentIds ?? user?.parentIds ?? []);
+    tribesStore.selectedTribe?.GetChildrenByIds(currentUser?.childrenIds ?? user?.childrenIds ?? []);
+  }, [currentUser, tribesStore.selectedTribe])
 
   useEffect(() => {
     runInAction(() => {
-      if (currentStore) {
-        currentStore.selectedUser = (currentUser ?? user);
+      if (tribesStore.selectedTribe) {
+        tribesStore.selectedTribe.selectedUser = (currentUser ?? user);
       }
     })
-  }, [currentUser, user])
+  }, [currentUser, user, tribesStore.selectedTribeId])
 
   const CurrentUserCard = useMemo(() => {
     return (
       <ProfileItem
-        user={currentStore?.users.find((id) => id.id  ===  (currentUser?.userId ?? user?.userId  ?? '')) ?? {} as UserType}
+        user={tribesStore.selectedTribe?.users.find((id) => id.id  ===  (currentUser?.userId ?? user?.userId  ?? '')) ?? {} as UserType}
         withBorder
       />
     )
-  }, [currentStore?.users, currentUser])
+  }, [tribesStore.selectedTribe?.users, currentUser])
+
+  const participants = useMemo(() => {
+    return !!tribesStore.selectedTribe?.participant?.length && (
+      <>
+        <Title
+          text={'Руководители'}
+          type={TitleType.SubTitle}
+        />
+        <UsersList>
+          {tribesStore.selectedTribe?.participant.map((parent) => {
+            return (
+              <SmallProfileItem
+                key={parent.id}
+                onClick={()  =>  {
+                  setCurrentUser(tribesStore.selectedTribe?.positions?.find((pos) => {
+                    return pos.userId === parent.id;
+                  } ));
+                }}
+                user={parent}
+              />
+            )
+          })}
+        </UsersList>
+      </>
+    )
+  }, [tribesStore.selectedTribe?.participant, tribesStore.selectedTribeId])
+
+  const childrenMemo = useMemo(() => {
+    return !!tribesStore.selectedTribe?.children?.length && (
+      <>
+        <Title
+          text={'Подчиненные'}
+          type={TitleType.SubTitle}
+        />
+        <UsersList>
+          {tribesStore.selectedTribe?.children.map((children) => {
+            return (
+              <SmallProfileItem
+                key={children.id}
+                onClick={()  =>  {
+                  setCurrentUser(tribesStore.selectedTribe?.positions?.find((pos) => {
+                    return pos.userId === children.id;
+                  } ));
+                }}
+                user={children}
+              />
+            )
+          })}
+        </UsersList>
+      </>
+    )
+
+  }, [tribesStore.selectedTribe?.children, tribesStore.selectedTribeId])
 
 
 
@@ -84,31 +141,7 @@ const TribeTree : FC = observer(() => {
             )
             : (
               <TribesTreeContainer>
-                {
-                  !!currentStore?.participant?.length && (
-                    <>
-                      <Title
-                        text={'Руководители'}
-                        type={TitleType.SubTitle}
-                      />
-                      <UsersList>
-                        {currentStore?.participant.map((parent) => {
-                          return (
-                            <SmallProfileItem
-                              key={parent.id}
-                              onClick={()  =>  {
-                                setCurrentUser(currentStore.positions?.find((pos) => {
-                                  return pos.userId === parent.id;
-                                } ));
-                              }}
-                              user={parent}
-                            />
-                          )
-                        })}
-                      </UsersList>
-                    </>
-                  )
-                }
+                {participants}
                 <Title
                   text={'Пользователь'}
                   type={TitleType.SubTitle}
@@ -116,26 +149,7 @@ const TribeTree : FC = observer(() => {
 
                 {CurrentUserCard}
 
-                {
-                  !!currentStore?.children?.length && (
-                    <>
-                      <Title
-                        text={'Подчиненные'}
-                        type={TitleType.SubTitle}
-                      />
-                      <UsersList>
-                        {currentStore?.children.map((children) => {
-                          return (
-                            <SmallProfileItem
-                              key={children.id}
-                              user={children}
-                            />
-                          )
-                        })}
-                      </UsersList>
-                    </>
-                  )
-                }
+                {childrenMemo}
                 {
                   currentUser?.userId && currentUser?.userId !== user?.userId && (
                     <Button
@@ -144,7 +158,6 @@ const TribeTree : FC = observer(() => {
                     />
                   )
                 }
-
               </TribesTreeContainer>
             )
       }

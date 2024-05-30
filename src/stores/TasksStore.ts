@@ -35,6 +35,28 @@ class TasksStore {
     }
   }
 
+  public async GetTasks(userId: string, tribeId: string) {
+    this.state = new FetchingStateStore();
+    try {
+      this.tasks = [];
+      if (tribeId.length > 0 && userId.length > 0) {
+        const response = await TaskServices.GetTasks(tribeId, userId);
+        if (response.status ===  200) {
+          this.state = new SuccessStateStore()
+          this.tasks = response.data;
+        }
+      }
+    } catch (error) {
+      this.state = new ErrorStateStore(error)
+    }
+  }
+
+  public ClearStore() {
+    this.state = new SuccessStateStore();
+    this.tasks = [];
+  }
+
+
   // public async GetChildrenByIds(ids: string[]) {
   //   this.state = new FetchingStateStore();
   //   try {
