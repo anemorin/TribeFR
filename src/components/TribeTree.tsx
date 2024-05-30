@@ -46,10 +46,6 @@ const TribeTree : FC = observer(() => {
   })
   const [currentUser, setCurrentUser] = useState<UserPositionType>();
 
-  // useEffect(() => {
-  //   setCurrentUser(user);
-  // }, [tribesStore.selectedTribe])
-
   useEffect(() => {
     tribesStore.selectedTribe?.GetTribeUsers();
     tribesStore.selectedTribe?.GetParticipantByIds(currentUser?.parentIds ?? user?.parentIds ?? []);

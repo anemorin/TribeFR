@@ -161,12 +161,8 @@ const TribeTaskList : FC = observer(() => {
                   if (currentStore && currentStore.id) {
                     await currentStore?.tasksStore?.CreateTask(values.TribeName, values.TribeDescription, currentStore?.id, performer)
                   }
-                  // await tribesStore.ChangeNameTribe(id, values.TribeName!);
-                  // if (tribesStore.state?.isSuccess) {
-                  //   tribesStore.GetTribes();
-                  // }
                   if (currentStore && currentStore.id) {
-                    await currentStore?.tasksStore?.GetTasks(userStore.user?.id ?? '', currentStore!.id);
+                    await currentStore?.tasksStore?.GetTasks(currentStore.selectedUser?.userId ?? '', currentStore!.id);
                   }
                   setShowModal(false);
                   setSubmitting(false);
